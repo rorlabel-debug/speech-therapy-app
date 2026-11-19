@@ -29,8 +29,11 @@ Plain HTML/CSS/JS, no build step, no server code. Progress is saved in the brows
 
 ## Where it runs
 
-- Hosting: not decided yet (see Decisions).
-- Repo: github.com/rorlabel-debug/speech-therapy-app
+- Hosting: **GitHub Pages**, live since 19 Nov 2026 at https://rorlabel-debug.github.io/speech-therapy-app/
+- Deploy: commit + `git push` to main. Pages rebuilds automatically (~30-60 s). Check:
+  `gh api repos/rorlabel-debug/speech-therapy-app/pages --jq .status` -> built.
+- Repo: github.com/rorlabel-debug/speech-therapy-app (**public**, needed for free Pages; Ash OK'd
+  this on 19 Nov 2026). Never commit anything personal or secret.
 - Secrets: none. The app has no keys or accounts.
 
 ## Standing rules
@@ -49,6 +52,7 @@ Plain HTML/CSS/JS, no build step, no server code. Progress is saved in the brows
 | --- | --- | --- | --- |
 | 19 Nov 2026 | Grown-up judges "Got it / Try again", no automatic speech recognition | iPad speech recognition guesses real words (hears "dat" as "that"/"cat"), sends audio to Apple, and isn't built for children's speech. SLTs judge by ear. | — |
 | 19 Nov 2026 | Mic is released after every recording | On iOS, keeping the mic open switches audio to the quiet "call" mode, so Coco gets quiet | app.js `recorder.onstop` |
+| 19 Nov 2026 | GitHub Pages, repo made public | Free, deploy = push, static site. Ash chose it over Railway | — |
 | 19 Nov 2026 | Emoji for all pictures | No image files to make or license; render sharply on iPad | words.js |
 
 ## Traps already paid for
