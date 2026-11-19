@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Coco's Sound Safari</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Sound Safari">
+  <meta name="theme-color" content="#fff4d6">
+  <link rel="apple-touch-icon" href="icon-512.png">
+  <link rel="icon" href="icon-512.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=1">
+</head>
+<body>
+  <div id="app">
+
+    <!-- HOME -->
+    <section id="home" class="screen active">
+      <div class="home-top">
+        <div class="grownup-btn" id="grownupBtn" aria-label="Grown-ups: press and hold">
+          <span class="ring"></span>⚙️
+          <small>hold</small>
+        </div>
+        <div class="star-count" id="homeStars">⭐ 0</div>
+      </div>
+      <div class="hero">
+        <div class="coco big" id="homeCoco">🦜</div>
+        <h1>Coco's<br>Sound Safari</h1>
+        <p class="hello" id="hello">Let's play with sounds!</p>
+      </div>
+      <div class="game-buttons">
+        <button class="game-btn say" data-go="pick-say">
+          <span class="gb-icon">🎤</span><span class="gb-text">Say it!</span>
+        </button>
+        <button class="game-btn listen" data-go="pick-listen">
+          <span class="gb-icon">👂</span><span class="gb-text">Silly or right?</span>
+        </button>
+        <button class="game-btn stickers" data-go="stickers">
+          <span class="gb-icon">📒</span><span class="gb-text">My stickers</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- SOUND PICKER -->
+    <section id="picker" class="screen">
+      <header class="bar">
+        <button class="back" data-go="home" aria-label="Back">⬅️</button>
+        <h2>Pick a sound</h2>
+        <span class="bar-gap"></span>
+      </header>
+      <div class="sound-grid" id="soundGrid"></div>
+    </section>
+
+    <!-- SAY IT -->
+    <section id="say" class="screen">
+      <header class="bar">
+        <button class="back" data-go="home" aria-label="Back">⬅️</button>
+        <div class="progress" id="sayProgress"></div>
+        <span class="bar-gap"></span>
+      </header>
+      <div class="card-area">
+        <div class="word-card" id="sayCard">
+          <div class="pic" id="sayPic"></div>
+          <div class="word" id="sayWord"></div>
+          <div class="sentence" id="saySentence"></div>
+        </div>
+        <div class="coach">
+          <div class="coco small">🦜</div>
+          <div class="bubble" id="sayTip"></div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="round-btn hear" id="hearBtn"><span>🔊</span><small>Hear it</small></button>
+        <button class="round-btn rec" id="recBtn"><span>🎤</span><small>Record me</small></button>
+        <button class="round-btn play" id="playBtn" hidden><span>▶️</span><small>Hear me</small></button>
+      </div>
+      <div class="judge">
+        <p class="judge-label">Grown-up: how did that sound?</p>
+        <div class="judge-buttons">
+          <button class="judge-btn again" id="againBtn">🔁 Try again</button>
+          <button class="judge-btn yes" id="yesBtn">⭐ Got it!</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SILLY OR RIGHT -->
+    <section id="listen" class="screen">
+      <header class="bar">
+        <button class="back" data-go="home" aria-label="Back">⬅️</button>
+        <div class="progress" id="listenProgress"></div>
+        <span class="bar-gap"></span>
+      </header>
+      <div class="listen-stage">
+        <div class="coco talker" id="listenCoco">🦜</div>
+        <div class="speech" id="listenSpeech">Listen…</div>
+        <div class="word-card small-card">
+          <div class="pic" id="listenPic"></div>
+        </div>
+        <button class="again-link" id="listenReplay">🔊 Say it again, Coco</button>
+      </div>
+      <div class="answer-buttons">
+        <button class="answer-btn right" id="rightBtn"><span>👍</span>Right!</button>
+        <button class="answer-btn silly" id="sillyBtn"><span>🤪</span>Silly!</button>
+      </div>
+    </section>
+
+    <!-- STICKER BOOK -->
+    <section id="stickers" class="screen">
+      <header class="bar">
+        <button class="back" data-go="home" aria-label="Back">⬅️</button>
+        <h2>My sticker book</h2>
+        <span class="bar-gap"></span>
+      </header>
+      <p class="sticker-note" id="stickerNote"></p>
+      <div class="sticker-grid" id="stickerGrid"></div>
+    </section>
+
+    <!-- GROWN-UPS -->
+    <section id="grownups" class="screen">
+      <header class="bar">
+        <button class="back" data-go="home" aria-label="Back">⬅️</button>
+        <h2>Grown-ups</h2>
+        <span class="bar-gap"></span>
+      </header>
+      <div class="grownup-body">
+        <div class="panel">
+          <h3>Progress</h3>
+          <div id="progressReport"></div>
+        </div>
+        <div class="panel">
+          <h3>Settings</h3>
+          <label class="field">Her name
+            <input id="nameInput" type="text" maxlength="20" placeholder="e.g. Ruby" autocomplete="off">
+          </label>
+          <div class="field">Sounds to practise
+            <div class="toggles" id="soundToggles"></div>
+          </div>
+          <div class="field">"Say it!" level
+            <div class="seg" id="levelSeg">
+              <button data-level="word">Words (cat)</button>
+              <button data-level="sentence">Sentences (I see a cat)</button>
+            </div>
+          </div>
+          <label class="field">Coco's voice
+            <select id="voiceSelect"></select>
+          </label>
+          <label class="field">Voice speed
+            <input id="rateInput" type="range" min="0.5" max="1.1" step="0.05">
+          </label>
+          <button class="small-btn" id="testVoice">🔊 Test voice</button>
+          <div class="field danger">
+            <button class="small-btn" id="resetBtn">Reset progress and stickers</button>
+            <div id="resetConfirm" hidden>
+              <p>This clears all stars, stickers and progress. Are you sure?</p>
+              <button class="small-btn red" id="resetYes">Yes, reset</button>
+              <button class="small-btn" id="resetNo">No, keep it</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel how">
+          <h3>How to use it</h3>
+          <p><b>Say it!</b> Tap 🔊 so she hears the word, then she says it. Tap 🎤 to record her and ▶️ to play it back. Listening to herself helps her notice the difference. You decide if it was right: <b>⭐ Got it!</b> or <b>🔁 Try again</b>. "Try again" never loses anything.</p>
+          <p><b>Silly or right?</b> Coco says the word either properly ("cat") or the way she says it ("dat"). She tells Coco if it was right or silly. Hearing the difference comes before saying it.</p>
+          <p>Little and often works best: one or two rounds a day (about 5 minutes). Each finished round wins a sticker.</p>
+          <p class="fine">This is practice at home, not a replacement for a speech and language therapist. If you haven't already, your GP or health visitor can refer her, and many NHS areas let parents self-refer.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CELEBRATION OVERLAY -->
+    <div class="overlay" id="celebrate" hidden>
+      <div class="celebrate-box">
+        <div class="burst" id="burstSticker">🌟</div>
+        <h2 id="celebrateTitle">Amazing!</h2>
+        <p id="celebrateText">You won a sticker!</p>
+        <div class="celebrate-buttons">
+          <button class="judge-btn yes" id="playAgainBtn">Play again</button>
+          <button class="judge-btn again" data-go="stickers" id="seeStickersBtn">See stickers</button>
+        </div>
+      </div>
+    </div>
+    <div id="confetti"></div>
+    <div class="toast" id="toast" hidden></div>
+  </div>
+
+  <script src="words.js?v=1"></script>
+  <script src="app.js?v=1"></script>
+</body>
+</html>
