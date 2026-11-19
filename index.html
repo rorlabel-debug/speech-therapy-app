@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1">
+  <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
   <div id="app">
@@ -142,7 +142,8 @@
           </div>
           <div class="field">"Say it!" level
             <div class="seg" id="levelSeg">
-              <button data-level="word">Words (cat)</button>
+              <button data-level="word">Short words (cat)</button>
+              <button data-level="long">Longer words too (kangaroo)</button>
               <button data-level="sentence">Sentences (I see a cat)</button>
             </div>
           </div>
@@ -150,7 +151,8 @@
             <select id="voiceSelect"></select>
           </label>
           <label class="field">Voice speed
-            <input id="rateInput" type="range" min="0.5" max="1.1" step="0.05">
+            <input id="rateInput" type="range" min="0.35" max="1" step="0.05">
+            <span class="range-ends"><span>🐢 Slower</span><span>Faster 🐇</span></span>
           </label>
           <button class="small-btn" id="testVoice">🔊 Test voice</button>
           <div class="field danger">
@@ -166,7 +168,8 @@
           <h3>How to use it</h3>
           <p><b>Say it!</b> Tap 🔊 so she hears the word, then she says it. Tap 🎤 to record her and ▶️ to play it back. Listening to herself helps her notice the difference. You decide if it was right: <b>⭐ Got it!</b> or <b>🔁 Try again</b>. "Try again" never loses anything.</p>
           <p><b>Silly or right?</b> Coco says the word either properly ("cat") or the way she says it ("dat"). She tells Coco if it was right or silly. Hearing the difference comes before saying it.</p>
-          <p>Little and often works best: one or two rounds a day (about 5 minutes). Each finished round wins a sticker.</p>
+          <p>Little and often works best for a 3-year-old: one or two rounds a day (a few minutes), stopping while she's still having fun. Each finished round (5 pictures) wins a sticker. Keep it playful: praise every try, and if she gets frustrated, switch to stickers or stop.</p>
+          <p>Good to know: at 3, lots of children still say "dat" for "cat" and "yike" for "like". K and G usually settle by about 3½, and L can take until 5 or 6. So there's no rush: hearing the difference (Silly or right?) is the best place to start.</p>
           <p class="fine">This is practice at home, not a replacement for a speech and language therapist. If you haven't already, your GP or health visitor can refer her, and many NHS areas let parents self-refer.</p>
         </div>
       </div>
@@ -188,7 +191,7 @@
     <div class="toast" id="toast" hidden></div>
   </div>
 
-  <script src="words.js?v=1"></script>
-  <script src="app.js?v=1"></script>
+  <script src="words.js?v=2"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>

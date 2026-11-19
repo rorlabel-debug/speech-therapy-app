@@ -355,3 +355,5 @@ h1 {
   .answer-btn span { font-size: 64px; }
   .game-btn { min-height: 160px; }
 }
+
+.range-ends { display: flex; justify-content: space-between; font-size: 14px; color: var(--soft); margin-top: 4px; }

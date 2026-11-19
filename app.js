@@ -3,8 +3,8 @@
 
   const SOUNDS = window.SOUNDS;
   const STICKERS = window.STICKERS;
-  const ROUND = 6;          // cards per round
-  const MAX_TRIES = 3;      // "Try again" this many times, then move on kindly
+  const ROUND = 5;          // cards per round (short: she's 3)
+  const MAX_TRIES = 2;      // "Try again" this many times, then move on kindly
   const KEY = 'soundSafari.v1';
 
   const $ = (id) => document.getElementById(id);
@@ -22,7 +22,8 @@
     sounds: Object.fromEntries(Object.entries(SOUNDS).map(([k, s]) => [k, s.defaultOn])),
     level: 'word',
     voice: '',
-    rate: 0.8,
+    rate: 0.6,
+    rateV: 2,    // bumped when the default speed changes, so old saved speeds get reset
     stars: 0,
     stickers: 0,
     stats: {},   // stats[soundKey] = { sayTries, sayGot, listenTries, listenRight }
@@ -34,6 +35,9 @@
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (saved) S = Object.assign(defaults(), saved, { sounds: Object.assign(defaults().sounds, saved.sounds || {}) });
+    // 19 Nov 2026: 0.8 was too fast for her. Move anyone on the old default to the new slower one.
+    if (!saved || saved.rateV !== 2) { S.rate = 0.6; S.rateV = 2; }
+    if (!['word', 'long', 'sentence'].includes(S.level)) S.level = 'word';
   } catch (e) { /* private mode etc: run with defaults */ }
 
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } };
@@ -262,7 +266,7 @@
 
   // Build a round: ROUND cards from the chosen sounds, spread across them
   const buildDeck = (keys) => {
-    const pools = keys.map((k) => shuffle(SOUNDS[k].words).map((item) => ({ k, item })));
+    const pools = keys.map((k) => shuffle(SOUNDS[k].words.filter((w) => S.level === 'long' || !w.h)).map((item) => ({ k, item })));
     const deck = [];
     for (let i = 0; deck.length < ROUND && i < 50; i++) {
       const pool = pools[i % pools.length];
@@ -307,7 +311,7 @@
     $('sayWord').innerHTML = highlight(c.item.w, c.k);
     $('saySentence').innerHTML = S.level === 'sentence' ? sentenceHTML(c.item, c.k) : '';
     $('saySentence').hidden = S.level !== 'sentence';
-    $('sayTip').innerHTML = `<b>${s.label}</b>: ${s.tip}`;
+    $('sayTip').innerHTML = `<b>Grown-up tip (${s.label}):</b> ${s.tip}`;
     renderProgress($('sayProgress'), say.results, say.idx);
     card.classList.remove('bounce'); void card.offsetWidth; card.classList.add('bounce');
     setTimeout(() => current === 'say' && speak(sayTarget(c)), 450);
@@ -386,7 +390,10 @@
     await new Promise((r) => setTimeout(r, 500));
     if (current !== 'listen') return;
     await cocoSays(c.silly ? c.item.x : c.item.w);
-    $('listenSpeech').textContent = 'Was that right, or silly?';
+    if (current !== 'listen') return;
+    $('listenSpeech').textContent = 'Right, or silly?';
+    await new Promise((r) => setTimeout(r, 350));
+    await cocoSays('Was that right? Or silly?');
     $('rightBtn').disabled = $('sillyBtn').disabled = false;
     lis.busy = false;
   };

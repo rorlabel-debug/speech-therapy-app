@@ -2,7 +2,8 @@
 
 ## What this is
 
-A fun speech-practice web app for Ash's daughter, used on an iPad in Safari (can be added to the
+A fun speech-practice web app for Ash's daughter (**3 years old**: can't read, short attention, so
+big pictures, everything spoken, 5-card rounds), used on an iPad in Safari (can be added to the
 Home Screen). She swaps the first sound of words for D (cat → "dat", K/G fronting) and L for Y
 (like → "yike", gliding). Two games plus rewards:
 - **Say it!**: picture + word, Coco (a parrot, the iPad's built-in voice) says it, she copies,
@@ -39,7 +40,7 @@ Plain HTML/CSS/JS, no build step, no server code. Progress is saved in the brows
 ## Standing rules
 
 - **When you change styles.css, app.js or words.js, bump `?v=N` on all three in index.html**,
-  and bump `CACHE` in sw.js. Otherwise the iPad keeps showing the old version.
+  and bump `CACHE` in sw.js (now v2). Otherwise the iPad keeps showing the old version.
 - Never show a button that can't work: the record button is hidden if the browser can't record,
   "Hear me" only appears after a recording.
 - Silly words (`x` in words.js) are spelled for the voice, e.g. kite → "dyte". Check new ones
@@ -53,6 +54,8 @@ Plain HTML/CSS/JS, no build step, no server code. Progress is saved in the brows
 | 19 Nov 2026 | Grown-up judges "Got it / Try again", no automatic speech recognition | iPad speech recognition guesses real words (hears "dat" as "that"/"cat"), sends audio to Apple, and isn't built for children's speech. SLTs judge by ear. | — |
 | 19 Nov 2026 | Mic is released after every recording | On iOS, keeping the mic open switches audio to the quiet "call" mode, so Coco gets quiet | app.js `recorder.onstop` |
 | 19 Nov 2026 | GitHub Pages, repo made public | Free, deploy = push, static site. Ash chose it over Railway | — |
+| 19 Nov 2026 | Voice speed default 0.6 (was 0.8) | Ash: too fast. Old saved speeds are reset once via `rateV` in app.js; bump `rateV` again if the default changes | app.js defaults |
+| 19 Nov 2026 | Built for age 3: 5 cards a round, 2 tries then move on, short familiar words by default (`h: 1` = longer words, only on "Longer words too"), Coco asks "Right or silly?" out loud | She's 3 and can't read | words.js, app.js |
 | 19 Nov 2026 | Emoji for all pictures | No image files to make or license; render sharply on iPad | words.js |
 
 ## Traps already paid for
