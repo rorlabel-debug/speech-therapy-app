@@ -21,7 +21,7 @@ window.SOUNDS = {
       { w: 'coat', e: '🧥', x: 'dote' },
       { w: 'cap', e: '🧢', x: 'dap' },
       { w: 'carrot', e: '🥕', x: 'darrot' },
-      { w: 'camel', e: '🐫', x: 'damel', h: 1 },
+      { w: 'camel', e: '🐫', x: 'dammel', h: 1 },
       { w: 'castle', e: '🏰', x: 'dassle', h: 1 },
       { w: 'cupcake', e: '🧁', x: 'dupcake' },
       { w: 'kangaroo', e: '🦘', x: 'dangaroo', h: 1 },
@@ -37,7 +37,7 @@ window.SOUNDS = {
       { w: 'gift', e: '🎁', x: 'dift' },
       { w: 'girl', e: '👧', x: 'durl' },
       { w: 'game', e: '🎮', x: 'dame' },
-      { w: 'guitar', e: '🎸', x: 'dih-tar', h: 1 },
+      { w: 'guitar', e: '🎸', x: 'ditar', h: 1 },
       { w: 'gorilla', e: '🦍', x: 'dorilla', h: 1 },
       { w: 'ghost', e: '👻', x: 'dohst' },
       { w: 'gold', e: '🥇', x: 'dold', a: 'some' },
@@ -50,7 +50,7 @@ window.SOUNDS = {
     tip: 'Lift your tongue tip up to the bumpy bit behind your top teeth and sing: la, la, la!',
     words: [
       { w: 'leg', e: '🦵', x: 'yeg' },
-      { w: 'lion', e: '🦁', x: 'yion' },
+      { w: 'lion', e: '🦁', x: 'yai-un' },
       { w: 'lemon', e: '🍋', x: 'yemon' },
       { w: 'leaf', e: '🍃', x: 'yeef' },
       { w: 'light', e: '💡', x: 'yight' },
@@ -118,3 +118,27 @@ window.STICKERS = [
   '🐧', '🦉', '🐙', '🦖', '🐝', '🦩', '🐯', '🐻', '🐳', '🦔', '🐞', '🐲',
   '🌈', '🚀', '🍦', '🎈', '🌟', '🏆',
 ];
+
+// Everything else Coco says. Each one is a recorded clip in audio/p-<key>.mp3
+// (made by tools/make-voice.mjs); the text is the fallback if a clip can't play.
+window.PHRASES = {
+  hello: "Hello! I'm Coco!",
+  praise1: 'Brilliant!',
+  praise2: 'Super saying!',
+  praise3: 'Wow, great talking!',
+  praise4: 'You did it!',
+  praise5: 'Fantastic!',
+  praise6: 'Amazing!',
+  nearly: 'Nearly! Listen again.',
+  goodtry: 'Good try! Listen to Coco.',
+  tryagain: "Let's try again!",
+  newone: "Good trying! Let's do a new one.",
+  question: 'Was that right? Or silly?',
+  yesSilly: 'Yes! That was silly! It should be…',
+  yesRight: 'Yes! That was right!',
+  noSilly: 'Hmm, that one was silly. It should be…',
+  noRight: 'Listen again. That one was right!',
+  hooray: 'Hooray! You won a new sticker!',
+  allStickers: "Hooray! You've got all the stickers! You're a superstar!",
+  test: 'Hello! I\'m Coco. Cat… dat. Can you hear the difference?',
+};

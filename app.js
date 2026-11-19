@@ -3,6 +3,8 @@
 
   const SOUNDS = window.SOUNDS;
   const STICKERS = window.STICKERS;
+  const PHRASES = window.PHRASES;
+  const AUDIO_V = 1;        // bump when the clips in audio/ are remade
   const ROUND = 5;          // cards per round (short: she's 3)
   const MAX_TRIES = 2;      // "Try again" this many times, then move on kindly
   const KEY = 'soundSafari.v1';
@@ -23,7 +25,8 @@
     level: 'word',
     voice: '',
     rate: 0.6,
-    rateV: 2,    // bumped when the default speed changes, so old saved speeds get reset
+    rateV: 2,
+    ipadVoice: false, // false = Coco's recorded natural voice (audio/), true = the iPad's own voice    // bumped when the default speed changes, so old saved speeds get reset
     stars: 0,
     stickers: 0,
     stats: {},   // stats[soundKey] = { sayTries, sayGot, listenTries, listenRight }
@@ -97,13 +100,62 @@
     synth.speak(u);
   });
 
+  // ---------------- Coco's recorded voice (audio/*.mp3, made by tools/make-voice.mjs) ----------------
+  // Played through Web Audio: once the first tap has woken the iPad's audio, clips can play any time.
+  const clipCache = {};
+  const loadClip = (id) => (clipCache[id] ||= fetch(`audio/${id}.mp3?v=${AUDIO_V}`)
+    .then((r) => { if (!r.ok) throw new Error(id); return r.arrayBuffer(); })
+    .then((b) => new Promise((res, rej) => audio().decodeAudioData(b, res, rej)))
+    .catch((e) => { delete clipCache[id]; throw e; }));
+  let clipSrc = null, talkToken = 0;
+  const playClip = async (id) => {
+    const c = audio(); if (!c) return false;
+    let buf;
+    try { buf = await loadClip(id); } catch (e) { return false; }
+    return new Promise((resolve) => {
+      const src = c.createBufferSource();
+      src.buffer = buf; src.connect(c.destination);
+      let done = false; const finish = () => { if (!done) { done = true; resolve(true); } };
+      src.onended = finish; setTimeout(finish, buf.duration * 1000 + 400);
+      clipSrc = src; src.start();
+    });
+  };
+  const stopTalking = () => {
+    talkToken++;
+    if (clipSrc) { try { clipSrc.stop(); } catch (e) { /* already stopped */ } clipSrc = null; }
+    synth && synth.cancel();
+  };
+  // A "line" is { id, text }: play the clip, or say the text with the iPad voice if there's no clip.
+  const lc = (c) => `${c.k}-${c.item.w.toLowerCase()}`;
+  const L = {
+    word: (c) => ({ id: `w-${lc(c)}`, text: c.item.w }),
+    silly: (c) => ({ id: `x-${lc(c)}`, text: c.item.x }),
+    sentence: (c) => ({ id: `s-${lc(c)}`, text: sentenceText(c.item) }),
+    p: (key) => ({ id: `p-${key}`, text: PHRASES[key] }),
+  };
+  const talk = async (...lines) => {
+    stopTalking();
+    const me = talkToken;
+    for (const line of lines) {
+      if (me !== talkToken) return;
+      const played = !S.ipadVoice && (await playClip(line.id));
+      if (me !== talkToken) return;
+      if (!played) await speak(line.text);
+      await new Promise((r) => setTimeout(r, 180));
+    }
+  };
+  const preload = (deck) => {
+    if (S.ipadVoice) return;
+    deck.forEach((c) => [L.word(c), L.silly(c), L.sentence(c)].forEach((l) => loadClip(l.id).catch(() => {})));
+  };
+
   // ---------------- recording her voice ----------------
   const canRecord = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
   let recorder = null, recChunks = [], recUrl = null, recTimer = null;
   const player = new Audio();
 
   const startRecording = async () => {
-    synth && synth.cancel();
+    stopTalking();
     let stream;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false } });
@@ -173,16 +225,17 @@
   const sentenceText = (item) => `I see ${article(item)} ${item.w}!`.replace(/\s+/g, ' ');
   const sentenceHTML = (item, k) => `I see ${article(item)} ${highlight(item.w, k)}!`.replace(/\s+/g, ' ');
   const praise = () => {
-    const p = ['Brilliant!', 'Super saying!', 'Wow, great talking!', 'You did it!', 'Fantastic!', 'Amazing!'];
-    const msg = pick(p);
-    return S.name && Math.random() < 0.5 ? `${msg} Well done, ${S.name}!` : msg;
+    const line = L.p(pick(['praise1', 'praise2', 'praise3', 'praise4', 'praise5', 'praise6']));
+    // The iPad voice can also say her name; the recorded voice can't.
+    if (S.ipadVoice && S.name && Math.random() < 0.5) line.text += ` Well done, ${S.name}!`;
+    return line;
   };
 
   // ---------------- screens ----------------
   let current = 'home';
   const go = (id) => {
     if (current === 'say') clearRecording();
-    synth && synth.cancel();
+    stopTalking();
     $('celebrate').hidden = true;
     document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('active', s.id === id));
     current = id;
@@ -215,7 +268,9 @@
     $('hello').textContent = S.name ? `Hello ${S.name}! Let's play with sounds!` : "Let's play with sounds!";
   };
   $('homeCoco').addEventListener('click', () => {
-    speak(S.name ? `Hello ${S.name}! I'm Coco!` : "Hello! I'm Coco!");
+    const hi = L.p('hello');
+    if (S.ipadVoice && S.name) hi.text = `Hello ${S.name}! I'm Coco!`;
+    talk(hi);
   });
 
   // Grown-ups button: press and hold so little fingers don't wander in
@@ -295,11 +350,12 @@
   let say = null;
   const startSay = (keys) => {
     say = { deck: buildDeck(keys), idx: 0, tries: 0, results: [], busy: false };
+    preload(say.deck);
     go('say');
     $('recBtn').hidden = !canRecord;
     showSayCard();
   };
-  const sayTarget = (c) => (S.level === 'sentence' ? sentenceText(c.item) : c.item.w);
+  const sayTarget = (c) => (S.level === 'sentence' ? L.sentence(c) : L.word(c));
   const showSayCard = () => {
     const c = say.deck[say.idx];
     const s = SOUNDS[c.k];
@@ -314,11 +370,10 @@
     $('sayTip').innerHTML = `<b>Grown-up tip (${s.label}):</b> ${s.tip}`;
     renderProgress($('sayProgress'), say.results, say.idx);
     card.classList.remove('bounce'); void card.offsetWidth; card.classList.add('bounce');
-    setTimeout(() => current === 'say' && speak(sayTarget(c)), 450);
+    setTimeout(() => current === 'say' && say.deck[say.idx] === c && talk(sayTarget(c)), 450);
   };
-  $('hearBtn').onclick = () => { if (say) speak(sayTarget(say.deck[say.idx])); };
-  $('sayCard').onclick = () => { if (say) speak(sayTarget(say.deck[say.idx])); };
-  $('sayTip').onclick = () => { if (say) speak(SOUNDS[say.deck[say.idx].k].tip); };
+  $('hearBtn').onclick = () => { if (say) talk(sayTarget(say.deck[say.idx])); };
+  $('sayCard').onclick = () => { if (say) talk(sayTarget(say.deck[say.idx])); };
   $('recBtn').onclick = () => {
     if (recorder && recorder.state === 'recording') stopRecording(); else startRecording();
   };
@@ -335,7 +390,7 @@
     renderProgress($('sayProgress'), say.results, -1);
     sfx.yay();
     $('sayCard').classList.remove('bounce'); void $('sayCard').offsetWidth; $('sayCard').classList.add('bounce');
-    await speak(praise());
+    await talk(praise());
     nextSay();
   };
   $('againBtn').onclick = async () => {
@@ -351,12 +406,11 @@
       say.busy = true;
       say.results[say.idx] = '💪';
       renderProgress($('sayProgress'), say.results, -1);
-      await speak('Good trying! Let\'s do a new one.');
+      await talk(L.p('newone'));
       nextSay();
       return;
     }
-    await speak(pick(['Nearly! Listen again.', 'Good try! Listen to Coco.', 'Let\'s try again!']));
-    speak(sayTarget(c));
+    talk(L.p(pick(['nearly', 'goodtry', 'tryagain'])), sayTarget(c));
   };
   const nextSay = () => {
     say.idx++;
@@ -371,12 +425,13 @@
     const silly = shuffle(deck.map((_, i) => i < Math.ceil(deck.length / 2)));
     deck.forEach((d, i) => (d.silly = silly[i]));
     lis = { deck, idx: 0, results: [], busy: false };
+    preload(deck);
     go('listen');
     showListenCard();
   };
-  const cocoSays = async (text) => {
+  const cocoSays = async (...lines) => {
     $('listenCoco').classList.add('speaking');
-    await speak(text);
+    await talk(...lines);
     $('listenCoco').classList.remove('speaking');
   };
   const showListenCard = async () => {
@@ -389,11 +444,12 @@
     renderProgress($('listenProgress'), lis.results, lis.idx);
     await new Promise((r) => setTimeout(r, 500));
     if (current !== 'listen') return;
-    await cocoSays(c.silly ? c.item.x : c.item.w);
+    await cocoSays(c.silly ? L.silly(c) : L.word(c));
     if (current !== 'listen') return;
     $('listenSpeech').textContent = 'Right, or silly?';
     await new Promise((r) => setTimeout(r, 350));
-    await cocoSays('Was that right? Or silly?');
+    await cocoSays(L.p('question'));
+    if (current !== 'listen') return;
     $('rightBtn').disabled = $('sillyBtn').disabled = false;
     lis.busy = false;
   };
@@ -401,7 +457,7 @@
     if (!lis || lis.busy) return;
     const c = lis.deck[lis.idx];
     lis.busy = true;
-    await cocoSays(c.silly ? c.item.x : c.item.w);
+    await cocoSays(c.silly ? L.silly(c) : L.word(c));
     lis.busy = false;
   };
   const answer = async (saidSilly) => {
@@ -420,14 +476,15 @@
     const w = c.item.w, x = c.item.x;
     if (ok) {
       sfx.yay();
-      if (c.silly) { $('listenSpeech').innerHTML = `Yes! <s>${x}</s> is silly! It's <b>${w}</b>`; await cocoSays(`Yes! Silly me! It's ${w}!`); }
-      else { $('listenSpeech').innerHTML = `Yes! <b>${w}</b> was right!`; await cocoSays(`Yes! I said ${w}. ${praise()}`); }
+      if (c.silly) { $('listenSpeech').innerHTML = `Yes! <s>${x}</s> is silly! It's <b>${w}</b>`; await cocoSays(L.p('yesSilly'), L.word(c)); }
+      else { $('listenSpeech').innerHTML = `Yes! <b>${w}</b> was right!`; await cocoSays(L.p('yesRight'), L.word(c), praise()); }
     } else {
       sfx.boop();
-      if (c.silly) { $('listenSpeech').innerHTML = `I said <s>${x}</s>. It should be <b>${w}</b>`; await cocoSays(`Hmm, I said ${x}. That's silly! It should be ${w}.`); }
-      else { $('listenSpeech').innerHTML = `I said <b>${w}</b>. That was right!`; await cocoSays(`Listen. I said ${w}. That was right!`); }
+      if (c.silly) { $('listenSpeech').innerHTML = `I said <s>${x}</s>. It should be <b>${w}</b>`; await cocoSays(L.p('noSilly'), L.word(c)); }
+      else { $('listenSpeech').innerHTML = `I said <b>${w}</b>. That was right!`; await cocoSays(L.p('noRight'), L.word(c)); }
     }
     await new Promise((r) => setTimeout(r, 600));
+    if (current !== 'listen') return;
     lis.idx++;
     if (lis.idx >= lis.deck.length) { roundDone(); return; }
     showListenCard();
@@ -452,7 +509,9 @@
     $('celebrateText').textContent = text;
     $('celebrate').hidden = false;
     sfx.fanfare(); confetti();
-    speak(`${S.name ? 'Hooray ' + S.name : 'Hooray'}! ${text}`);
+    const cheer = L.p(S.stickers <= STICKERS.length && text.startsWith('You won') ? 'hooray' : 'allStickers');
+    if (S.ipadVoice && S.name) cheer.text = `Hooray ${S.name}! ${text}`;
+    talk(cheer);
     lastWon = S.stickers - 1;
   };
   let lastWon = -1;
@@ -496,6 +555,7 @@
     $('nameInput').value = S.name;
     $('rateInput').value = S.rate;
     fillVoiceSelect();
+    showVoiceMode();
 
     const tg = $('soundToggles'); tg.innerHTML = '';
     Object.entries(SOUNDS).forEach(([k, s]) => {
@@ -539,9 +599,16 @@
   };
 
   $('nameInput').addEventListener('input', (e) => { S.name = e.target.value.trim(); save(); });
-  $('rateInput').addEventListener('change', (e) => { S.rate = parseFloat(e.target.value); save(); speak('Hello! I\'m Coco!'); });
-  $('voiceSelect').addEventListener('change', (e) => { S.voice = e.target.value; save(); speak('Hello! I\'m Coco!'); });
-  $('testVoice').onclick = () => speak('Cat. Dat. Like. Yike. Can you hear the difference?');
+  $('rateInput').addEventListener('change', (e) => { S.rate = parseFloat(e.target.value); save(); talk(L.p('test')); });
+  $('voiceSelect').addEventListener('change', (e) => { S.voice = e.target.value; save(); talk(L.p('test')); });
+  $('testVoice').onclick = () => talk(L.p('test'));
+  document.querySelectorAll('#voiceModeSeg button').forEach((b) => (b.onclick = () => {
+    S.ipadVoice = b.dataset.mode === 'ipad'; save(); showVoiceMode(); talk(L.p('test'));
+  }));
+  function showVoiceMode() {
+    document.querySelectorAll('#voiceModeSeg button').forEach((b) => b.classList.toggle('on', (b.dataset.mode === 'ipad') === !!S.ipadVoice));
+    $('ipadVoiceBox').hidden = !S.ipadVoice;
+  }
   document.querySelectorAll('#levelSeg button').forEach((b) => (b.onclick = () => {
     S.level = b.dataset.level; save();
     document.querySelectorAll('#levelSeg button').forEach((x) => x.classList.toggle('on', x === b));

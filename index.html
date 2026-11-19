@@ -14,7 +14,7 @@
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
   <div id="app">
@@ -147,13 +147,21 @@
               <button data-level="sentence">Sentences (I see a cat)</button>
             </div>
           </div>
-          <label class="field">Coco's voice
+          <div class="field">Coco's voice
+            <div class="seg" id="voiceModeSeg">
+              <button data-mode="natural">Natural voice (recommended)</button>
+              <button data-mode="ipad">iPad voice (can say her name)</button>
+            </div>
+          </div>
+          <div id="ipadVoiceBox" hidden>
+            <label class="field">iPad voice
             <select id="voiceSelect"></select>
-          </label>
-          <label class="field">Voice speed
+            </label>
+            <label class="field">Voice speed
             <input id="rateInput" type="range" min="0.35" max="1" step="0.05">
             <span class="range-ends"><span>🐢 Slower</span><span>Faster 🐇</span></span>
-          </label>
+            </label>
+                    </div>
           <button class="small-btn" id="testVoice">🔊 Test voice</button>
           <div class="field danger">
             <button class="small-btn" id="resetBtn">Reset progress and stickers</button>
@@ -191,7 +199,7 @@
     <div class="toast" id="toast" hidden></div>
   </div>
 
-  <script src="words.js?v=2"></script>
-  <script src="app.js?v=2"></script>
+  <script src="words.js?v=3"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>

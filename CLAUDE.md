@@ -35,12 +35,25 @@ Plain HTML/CSS/JS, no build step, no server code. Progress is saved in the brows
   `gh api repos/rorlabel-debug/speech-therapy-app/pages --jq .status` -> built.
 - Repo: github.com/rorlabel-debug/speech-therapy-app (**public**, needed for free Pages; Ash OK'd
   this on 19 Nov 2026). Never commit anything personal or secret.
-- Secrets: none. The app has no keys or accounts.
+- Secrets: none in the app. Making voice clips uses the OpenAI key that lives in
+  `../colourkraft/.env.local` (OPENAI_API_KEY), with Ash's OK (19 Nov 2026). It's passed in as an
+  environment variable only; never copy it into this repo (it's public).
+
+## Coco's voice (audio/)
+
+- Every word, silly word, "I see a ___!" sentence and phrase is a recorded mp3 in `audio/`
+  (226 clips, ~9 MB), made with OpenAI gpt-4o-mini-tts, voice "coral", British, slow, for a
+  3-year-old. Names: `w-<sound>-<word>`, `x-` silly, `s-` sentence, `p-<key>` for PHRASES in words.js.
+- Make missing clips: `OPENAI_API_KEY=... node tools/make-voice.mjs [id-prefix]` (skips existing
+  files; delete a file to remake it). Check them: `node tools/check-voice.mjs [prefix] [--all]`
+  (speech-to-text; flags clips that don't match. The checker is fussy: read the flagged list by hand).
+- After remaking clips, bump `AUDIO_V` in app.js (and the usual ?v= / CACHE bumps).
+- Her name can't be in recordings: only the "iPad voice" setting says it.
 
 ## Standing rules
 
 - **When you change styles.css, app.js or words.js, bump `?v=N` on all three in index.html**,
-  and bump `CACHE` in sw.js (now v2). Otherwise the iPad keeps showing the old version.
+  and bump `CACHE` in sw.js (now v3). Otherwise the iPad keeps showing the old version.
 - Never show a button that can't work: the record button is hidden if the browser can't record,
   "Hear me" only appears after a recording.
 - Silly words (`x` in words.js) are spelled for the voice, e.g. kite → "dyte". Check new ones
@@ -56,6 +69,8 @@ Plain HTML/CSS/JS, no build step, no server code. Progress is saved in the brows
 | 19 Nov 2026 | GitHub Pages, repo made public | Free, deploy = push, static site. Ash chose it over Railway | — |
 | 19 Nov 2026 | Voice speed default 0.6 (was 0.8) | Ash: too fast. Old saved speeds are reset once via `rateV` in app.js; bump `rateV` again if the default changes | app.js defaults |
 | 19 Nov 2026 | Built for age 3: 5 cards a round, 2 tries then move on, short familiar words by default (`h: 1` = longer words, only on "Longer words too"), Coco asks "Right or silly?" out loud | She's 3 and can't read | words.js, app.js |
+| 19 Nov 2026 | Recorded natural voice instead of the iPad voice | Ash: the iPad voice was too hard for a 3-year-old to understand. iPad voice kept as an option in Grown-ups | audio/, tools/ |
+| 19 Nov 2026 | No spoken grown-up tips | A voice reads "k, k, k" as the letter name "kay", which is the wrong model | — |
 | 19 Nov 2026 | Emoji for all pictures | No image files to make or license; render sharply on iPad | words.js |
 
 ## Traps already paid for
@@ -67,6 +82,10 @@ Plain HTML/CSS/JS, no build step, no server code. Progress is saved in the brows
   attribute. Fixed with a global `[hidden]{display:none!important}` in styles.css.
 - **19 Nov 2026 – Swift icon script hung for 3+ minutes** (AppKit drawing from the command line).
   Made the icon with Quick Look instead: `qlmanage -t -s 512 -o <dir> icon.svg`.
+
+- **19 Nov 2026 – silly words came out wrong** (dat → "dot", light → "yike", ghost → "joast",
+  guitar spelled out as letters). Fix: the instructions tell the voice the silly word must RHYME
+  with the real word, and some spellings changed (ditar, dammel, yai-un). Use check-voice.mjs.
 
 ## What doesn't live in this repo
 
